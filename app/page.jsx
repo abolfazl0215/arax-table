@@ -246,6 +246,7 @@ export default function PDFTablePage() {
             color: #1f2937 !important;
             background: white !important;
             height: auto;
+            white-space: pre-wrap;
           }
           th { 
             background-color: ${headerColor} !important;
@@ -328,7 +329,9 @@ export default function PDFTablePage() {
                 ${columns
                   .map(
                     (col) => `
-                  <td>${row.data[col.id] || ""}</td>
+                  <td>${String(row.data[col.id] || "")
+                    .split("\n")
+                    .join("<br/>")}</td>
                 `,
                   )
                   .join("")}
@@ -533,13 +536,18 @@ export default function PDFTablePage() {
                             }
                           : {}
                       }>
-                      <input
-                        type="text"
+                      <textarea
+                        rows={1}
                         value={row.data[col.id] || ""}
                         onChange={(e) =>
                           updateCell(row.id, col.id, e.target.value)
                         }
-                        className="w-full p-2 text-center outline-none bg-transparent font-medium"
+                        onInput={(e) => {
+                          // auto-grow for multi-line cells
+                          e.target.style.height = "auto";
+                          e.target.style.height = `${e.target.scrollHeight}px`;
+                        }}
+                        className="w-full p-2 text-center outline-none bg-transparent font-medium resize-none overflow-hidden"
                         style={
                           row.isHeader
                             ? {
