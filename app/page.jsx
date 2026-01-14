@@ -209,7 +209,7 @@ export default function PDFTablePage() {
     const printWindow = window.open("", "", "width=800,height=600");
     const content = `
       <!DOCTYPE html>
-      <html dir="rtl">
+      <html dir="ltr">
       <head>
         <meta charset="UTF-8">
         <style>
@@ -223,6 +223,24 @@ export default function PDFTablePage() {
               print-color-adjust: exact !important;
               color-adjust: exact !important;
             }
+            /* Force fixed layout so columns distribute evenly and wrap */
+            table {
+              table-layout: fixed !important;
+              direction: ltr !important;
+            }
+            /* Reduce horizontal padding for printed PDF to fit more columns */
+            thead th { padding: 8px 6px !important; }
+            tbody td { padding: 6px 6px !important; }
+            /* Make body cells slightly smaller in print but keep header sizes */
+            tbody td { font-size: 12px !important; }
+            thead th { font-size: 15px !important; }
+            /* Ensure long content wraps and cells have a max width */
+            th, td {
+              white-space: normal !important;
+              word-break: break-word !important;
+              overflow-wrap: anywhere !important;
+              max-width: 6cm !important;
+            }
           }
           * { 
             margin: 0; 
@@ -234,7 +252,7 @@ export default function PDFTablePage() {
           body { 
             font-family: 'Tahoma', Arial, sans-serif; 
             padding: 20px;
-            direction: rtl;
+            direction: ltr;
             background: #f1f5f9;
           }
           .header { 
@@ -270,16 +288,21 @@ export default function PDFTablePage() {
             border-collapse: collapse; 
             margin-bottom: 30px;
             background: white;
+            direction: ltr;
+            table-layout: fixed;
           }
           th, td { 
             border: 1px solid #333 !important; 
-            padding: 10px 12px; 
+            padding: 10px 8px; 
             text-align: center;
             font-size: 15px;
             color: #1f2937 !important;
             background: white !important;
             height: auto;
-            white-space: pre-wrap;
+            white-space: normal;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            max-width: 6cm;
           }
           th { 
             background-color: ${headerColor} !important;
