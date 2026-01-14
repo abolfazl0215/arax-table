@@ -96,6 +96,22 @@ export default function PDFTablePage() {
     );
   };
 
+  const insertColumnAfter = (colId) => {
+    const index = columns.findIndex((c) => c.id === colId);
+    if (index === -1) return;
+    const newId = Math.max(...columns.map((c) => c.id), 0) + 1;
+    const newColumn = { id: newId, name: `ستون ${newId}` };
+    const newColumns = [...columns];
+    newColumns.splice(index + 1, 0, newColumn);
+    setColumns(newColumns);
+    setRows(
+      rows.map((row) => ({
+        ...row,
+        data: { ...row.data, [newId]: "" },
+      })),
+    );
+  };
+
   const deleteColumn = (colId) => {
     if (columns.length <= 1) return;
     setColumns(columns.filter((col) => col.id !== colId));
@@ -121,6 +137,23 @@ export default function PDFTablePage() {
         ),
       },
     ]);
+  };
+
+  const insertRowAfter = (rowId) => {
+    const index = rows.findIndex((r) => r.id === rowId);
+    if (index === -1) return;
+    const newId = Math.max(...rows.map((r) => r.id), 0) + 1;
+    const newRow = {
+      id: newId,
+      isHeader: false,
+      data: columns.reduce(
+        (acc, col) => ({ ...acc, [col.id]: "" }),
+        {},
+      ),
+    };
+    const newRows = [...rows];
+    newRows.splice(index + 1, 0, newRow);
+    setRows(newRows);
   };
 
   const deleteRow = (rowId) => {
@@ -505,6 +538,12 @@ export default function PDFTablePage() {
                       className="bg-transparent text-center w-full text-white font-bold outline-none"
                       style={{ color: "white" }}
                     />
+                    <button
+                      onClick={() => insertColumnAfter(col.id)}
+                      className="absolute top-1 right-1 bg-green-600 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition"
+                      title="افزودن ستون بعد از این ستون">
+                      <Plus size={14} />
+                    </button>
                     {columns.length > 1 && (
                       <button
                         onClick={() => deleteColumn(col.id)}
@@ -565,6 +604,12 @@ export default function PDFTablePage() {
                   <td className="border border-gray-300 p-2 text-center bg-white">
                     <div className="flex gap-2 justify-center">
                       <button
+                        onClick={() => insertRowAfter(row.id)}
+                        className="bg-green-600 text-white p-2 rounded hover:bg-green-700 transition"
+                        title="افزودن ردیف بعد از این ردیف">
+                        <Plus size={16} />
+                      </button>
+                      <button
                         onClick={() => toggleRowHeader(row.id)}
                         className={`${
                           row.isHeader
@@ -597,7 +642,7 @@ export default function PDFTablePage() {
         <div className="bg-white rounded-lg shadow-md p-6 mt-6 border border-gray-200">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-right text-gray-800">
-              📝 نکات مهم
+              📝 نکات مهمم
             </h2>
             <button
               onClick={addNote}
