@@ -12,6 +12,7 @@ export default function PDFTablePage() {
   const [email, setEmail] = useState("info@company.com");
   const [headerColor, setHeaderColor] = useState("#3b82f6");
   const [notes, setNotes] = useState([]);
+  const [importText, setImportText] = useState("");
 
   const initialColumns = [
     { id: 1, name: "ستون 1" },
@@ -530,6 +531,53 @@ export default function PDFTablePage() {
     }, 250);
   };
 
+  const exportTableData = () => {
+    const data = localStorage.getItem("tableData") || "";
+    if (!data) {
+      alert(
+        "هیچ داده‌ای در localStorage با کلید 'tableData' پیدا نشد.",
+      );
+      return;
+    }
+    const blob = new Blob([data], {
+      type: "text/plain;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "tableData.txt";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const importFromText = () => {
+    if (!importText || importText.trim() === "") {
+      alert("متن JSON را وارد کنید یا فایل انتخاب کنید.");
+      return;
+    }
+    try {
+      const parsed = JSON.parse(importText);
+      // Only replace localStorage item; do not change in-memory state
+      localStorage.setItem("tableData", JSON.stringify(parsed));
+      alert(
+        "داده‌ها در localStorage ذخیره شدند. برای اعمال تغییرات، صفحه را رفرش کنید.",
+      );
+    } catch (e) {
+      alert("JSON نامعتبر: " + e.message);
+    }
+  };
+
+  const handleFileImport = (file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImportText(String(e.target.result || ""));
+    };
+    reader.readAsText(file);
+  };
+
   return (
     <div className="min-h-screen bg-slate-100 p-4">
       <div className="max-w-7xl mx-auto">
@@ -638,6 +686,58 @@ export default function PDFTablePage() {
             <Download size={20} />
             دریافت PDF
           </button>
+        </div>
+
+        {/* مدیریت import/export برای localStorage */}
+        <div className="bg-white rounded-lg shadow-md p-4 mb-6 border border-gray-200">
+          <h2 className="text-lg text-black font-bold text-right mb-2">
+            مدیریت localStorage
+          </h2>
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex items-center gap-3 justify-end">
+              <button
+                onClick={exportTableData}
+                className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">
+                دانلود tableData
+              </button>
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 text-right mb-1">
+                وارد کردن JSON بزرگ (جایگزینی tableData)
+              </label>
+              <textarea
+                value={importText}
+                onChange={(e) => setImportText(e.target.value)}
+                rows={6}
+                className="w-full p-2 border rounded-lg text-right text-black"
+                placeholder="اینجا JSON خود را بچسبانید یا از فایل استفاده کنید"
+              />
+              <div className="flex gap-2 mt-2 items-center">
+                <input
+                  type="file"
+                  accept=".json,application/json,text/plain"
+                  onChange={(e) =>
+                    handleFileImport(e.target.files[0])
+                  }
+                  className="text-sm"
+                />
+                <button
+                  onClick={importFromText}
+                  className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition">
+                  وارد کردن
+                </button>
+                <button
+                  onClick={() => setImportText("")}
+                  className="bg-gray-300 px-4 py-2 rounded-lg">
+                  پاک کردن
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mt-2 text-right">
+                در صورت موفقیت، localStorage مقدار جدید را دریافت
+                می‌کند. برای اعمال تغییرات صفحه را رفرش کنید.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* جدول */}
