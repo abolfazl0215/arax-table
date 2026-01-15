@@ -252,7 +252,7 @@ export default function PDFTablePage() {
           }
           body { 
             font-family: 'Tahoma', Arial, sans-serif; 
-            padding: 20px 20px 80px 20px;
+            padding: 20px;
             direction: ltr;
             background: #f1f5f9;
           }
@@ -338,10 +338,6 @@ export default function PDFTablePage() {
             margin-top: 2px;
           }
           .footer { 
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
             text-align: center; 
             font-size: 13px; 
             color: white !important;
@@ -349,14 +345,7 @@ export default function PDFTablePage() {
             background: #012710 !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
-            height: auto;
-            min-height: 50px;
-          }
-          @media print {
-            body {
-              padding-bottom: 60px !important;
-              margin-bottom: 60px !important;
-            }
+            margin-top: 40px;
           }
           .footer-content {
             display: flex;
