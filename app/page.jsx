@@ -36,105 +36,8 @@ export default function PDFTablePage() {
     })),
   );
 
-  // const initData_ = {
-  //   companyName: "Hotel Information",
-  //   companySubtitle: "Araks Group",
-  //   website: "www.araksgroup.com",
-  //   whatsapp: "+98 912 345 6789",
-  //   email: "info@company.com",
-  //   headerColor: "#079c19",
-  //   columns: [
-  //     { id: 1, name: "Hotel5*" },
-  //     { id: 2, name: "Adress" },
-  //     { id: 3, name: "Includes" },
-  //     { id: 4, name: "Tell" },
-  //     { id: 5, name: "Email" },
-  //     { id: 6, name: "Web" },
-  //     { id: 7, name: "Location" },
-  //   ],
-  //   rows: [
-  //     {
-  //       id: 1,
-  //       isHeader: false,
-  //       data: {
-  //         1: "Grand hotel",
-  //         2: "Abovyan street14",
-  //         3: "pool,gym,spa",
-  //         4: "+374 10 591 600\n+374 10 591 699",
-  //         5: "sales@grandhotelyerevan.com",
-  //         6: "grandhotelyerevan.com",
-  //         7: "3' center",
-  //       },
-  //     },
-  //     {
-  //       id: 2,
-  //       isHeader: false,
-  //       data: {
-  //         1: "Radisson blue",
-  //         2: "Azatutyan Ave",
-  //         3: "pool,gym,spa",
-  //         4: "+374 10 21 99 00",
-  //         5: "sales.radssonbluhotel@gmail.com",
-  //         6: "radissonhotels.com",
-  //         7: "5' center",
-  //       },
-  //     },
-  //     {
-  //       id: 3,
-  //       isHeader: false,
-  //       data: {
-  //         1: "Holliday Inn yerevan",
-  //         2: "Amiryan street2",
-  //         3: "pool,gym,spa",
-  //         4: "+374 60 83 30 00",
-  //         5: "holidayinnyerevan@ihg.com",
-  //         6: "ihg.com",
-  //         7: "center",
-  //       },
-  //     },
-  //     {
-  //       id: 4,
-  //       isHeader: false,
-  //       data: {
-  //         1: "D.T Hilton",
-  //         2: "Grigor Lusavorich street",
-  //         3: "pool,gym,spa",
-  //         4: "+374 11 55 53 33",
-  //         5: "evnye.hotel@hilton.com",
-  //         6: "hilton.com",
-  //         7: "center",
-  //       },
-  //     },
-  //     {
-  //       id: 5,
-  //       isHeader: false,
-  //       data: {
-  //         1: "The Alexander",
-  //         2: "Abovyan street3/4",
-  //         3: "pool,gym,spa",
-  //         4: "+374 11 20 60 00",
-  //         5: "info@thealexanderyerevan.com",
-  //         6: "marriott.com",
-  //         7: "5' center",
-  //       },
-  //     },
-  //   ],
-  //   notes: [
-  //     { id: 1, text: "Цены указаны в долларах США." },
-  //     {
-  //       id: 2,
-  //       text: "Услуги туров, экскурсий и мероприятий координируйте напрямую с Araks Group.",
-  //     },
-  //     {
-  //       id: 3,
-  //       text: "Обновление списка производится еженедельно и предоставляется уважаемому агентству.",
-  //     },
-  //   ],
-  // };
-
   // بارگذاری از حافظه محلی
   useEffect(() => {
-    // localStorage.setItem("tableData", JSON.stringify(initData_));
     const savedData = localStorage.getItem("tableData");
     if (savedData) {
       try {
@@ -349,7 +252,7 @@ export default function PDFTablePage() {
           }
           body { 
             font-family: 'Tahoma', Arial, sans-serif; 
-            padding: 20px;
+            padding: 20px 20px 80px 20px;
             direction: ltr;
             background: #f1f5f9;
           }
@@ -418,7 +321,7 @@ export default function PDFTablePage() {
           }
           .notes-section {
             margin-top: 30px;
-            margin-bottom: 60px;
+            margin-bottom: 30px;
             padding: 0;
           }
           .notes-section .note-item {
@@ -442,10 +345,18 @@ export default function PDFTablePage() {
             text-align: center; 
             font-size: 13px; 
             color: white !important;
-            padding: 15px 20px;
+            padding: 12px 20px;
             background: #012710 !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
+            height: auto;
+            min-height: 50px;
+          }
+          @media print {
+            body {
+              padding-bottom: 60px !important;
+              margin-bottom: 60px !important;
+            }
           }
           .footer-content {
             display: flex;
