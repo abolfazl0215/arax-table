@@ -1,6 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Plus, Trash2, Download, AlignJustify } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Download,
+  AlignJustify,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 
 export default function PDFTablePage() {
   const [companyName, setCompanyName] = useState("نام شرکت");
@@ -25,6 +32,12 @@ export default function PDFTablePage() {
   ];
 
   const [columns, setColumns] = useState(initialColumns);
+  const [visibleColumns, setVisibleColumns] = useState(
+    initialColumns.reduce(
+      (acc, col) => ({ ...acc, [col.id]: true }),
+      {},
+    ),
+  );
   const [rows, setRows] = useState(
     Array.from({ length: 15 }, (_, i) => ({
       id: i + 1,
@@ -34,6 +47,12 @@ export default function PDFTablePage() {
         {},
       ),
     })),
+  );
+  const [visibleRows, setVisibleRows] = useState(
+    Array.from({ length: 15 }, (_, i) => ({ [i + 1]: true })).reduce(
+      (acc, obj) => ({ ...acc, ...obj }),
+      {},
+    ),
   );
 
   // بارگذاری از حافظه محلی
@@ -53,6 +72,20 @@ export default function PDFTablePage() {
         setColumns(parsed.columns || initialColumns);
         setRows(parsed.rows || rows);
         setNotes(parsed.notes || []);
+        setVisibleColumns(
+          parsed.visibleColumns ||
+            (parsed.columns || initialColumns).reduce(
+              (acc, col) => ({ ...acc, [col.id]: true }),
+              {},
+            ),
+        );
+        setVisibleRows(
+          parsed.visibleRows ||
+            (parsed.rows || rows).reduce(
+              (acc, row) => ({ ...acc, [row.id]: true }),
+              {},
+            ),
+        );
       } catch (e) {
         console.error("خطا در بارگذاری داده‌ها:", e);
       }
@@ -71,6 +104,8 @@ export default function PDFTablePage() {
       columns,
       rows,
       notes,
+      visibleColumns,
+      visibleRows,
     };
     localStorage.setItem("tableData", JSON.stringify(dataToSave));
   }, [
@@ -83,12 +118,15 @@ export default function PDFTablePage() {
     columns,
     rows,
     notes,
+    visibleColumns,
+    visibleRows,
   ]);
 
   const addColumn = () => {
     const newId = Math.max(...columns.map((c) => c.id), 0) + 1;
     const newColumn = { id: newId, name: `ستون ${newId}` };
     setColumns([...columns, newColumn]);
+    setVisibleColumns({ ...visibleColumns, [newId]: true });
     setRows(
       rows.map((row) => ({
         ...row,
@@ -105,6 +143,7 @@ export default function PDFTablePage() {
     const newColumns = [...columns];
     newColumns.splice(index + 1, 0, newColumn);
     setColumns(newColumns);
+    setVisibleColumns({ ...visibleColumns, [newId]: true });
     setRows(
       rows.map((row) => ({
         ...row,
@@ -138,6 +177,7 @@ export default function PDFTablePage() {
         ),
       },
     ]);
+    setVisibleRows({ ...visibleRows, [newId]: true });
   };
 
   const insertRowAfter = (rowId) => {
@@ -155,6 +195,7 @@ export default function PDFTablePage() {
     const newRows = [...rows];
     newRows.splice(index + 1, 0, newRow);
     setRows(newRows);
+    setVisibleRows({ ...visibleRows, [newId]: true });
   };
 
   const deleteRow = (rowId) => {
@@ -207,6 +248,11 @@ export default function PDFTablePage() {
   };
 
   const generatePDF = () => {
+    const visibleCols = columns.filter(
+      (col) => visibleColumns[col.id],
+    );
+    const visibleRowsList = rows.filter((row) => visibleRows[row.id]);
+
     const printWindow = window.open("", "", "width=800,height=600");
     const content = `
       <!DOCTYPE html>
@@ -216,8 +262,9 @@ export default function PDFTablePage() {
         <style>
           @media print {
             @page { 
-              margin: 1cm;
-              size: A4;
+              margin: 0.8cm;
+              size: auto;
+              width: 100%;
             }
             * {
               -webkit-print-color-adjust: exact !important;
@@ -228,6 +275,12 @@ export default function PDFTablePage() {
             table {
               table-layout: fixed !important;
               direction: ltr !important;
+            }
+            /* Prevent header repetition on new pages */
+            thead {
+              display: table-row-group !important;
+              page-break-after: avoid !important;
+              page-break-inside: avoid !important;
             }
             /* Reduce horizontal padding for printed PDF to fit more columns */
             thead th { padding: 8px 6px !important; }
@@ -252,15 +305,15 @@ export default function PDFTablePage() {
           }
           body { 
             font-family: 'Tahoma', Arial, sans-serif; 
-            padding: 20px;
+            padding: 15px;
             direction: ltr;
             background: #f1f5f9;
           }
           .header { 
           position:relative;
             text-align: center; 
-            margin-bottom: 30px;
-            padding: 30px 20px;
+            margin-bottom: 20px;
+            padding: 25px 15px;
             background: #012710 !important;
             color: white !important;
             border-radius: 8px;
@@ -287,10 +340,13 @@ export default function PDFTablePage() {
           table { 
             width: 100%; 
             border-collapse: collapse; 
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             background: white;
             direction: ltr;
             table-layout: fixed;
+          }
+          tbody tr {
+            page-break-inside: avoid !important;
           }
           th, td { 
             border: 1px solid #333 !important; 
@@ -319,9 +375,13 @@ export default function PDFTablePage() {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
+          .row-header {
+            page-break-after: avoid !important;
+            page-break-inside: avoid !important;
+          }
           .notes-section {
-            margin-top: 30px;
-            margin-bottom: 30px;
+            margin-top: 20px;
+            margin-bottom: 20px;
             padding: 0;
           }
           .notes-section .note-item {
@@ -341,11 +401,11 @@ export default function PDFTablePage() {
             text-align: center; 
             font-size: 13px; 
             color: white !important;
-            padding: 12px 20px;
+            padding: 10px 15px;
             background: #012710 !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
-            margin-top: 40px;
+            margin-top: 20px;
           }
           .footer-content {
             display: flex;
@@ -372,15 +432,17 @@ export default function PDFTablePage() {
         <table>
           <thead>
             <tr>
-              ${columns.map((col) => `<th>${col.name}</th>`).join("")}
+              ${visibleCols
+                .map((col) => `<th>${col.name}</th>`)
+                .join("")}
             </tr>
           </thead>
           <tbody>
-            ${rows
+            ${visibleRowsList
               .map(
                 (row) => `
               <tr${row.isHeader ? ' class="row-header"' : ""}>
-                ${columns
+                ${visibleCols
                   .map(
                     (col) => `
                   <td>${String(row.data[col.id] || "")
@@ -648,7 +710,34 @@ export default function PDFTablePage() {
                 {columns.map((col) => (
                   <th
                     key={col.id}
-                    className="border border-gray-300 p-3 text-white relative group">
+                    className="border border-gray-300 p-3 text-white relative group"
+                    style={{
+                      opacity: visibleColumns[col.id] ? 1 : 0.4,
+                      backgroundColor: visibleColumns[col.id]
+                        ? headerColor
+                        : "#999",
+                    }}>
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <button
+                        onClick={() =>
+                          setVisibleColumns({
+                            ...visibleColumns,
+                            [col.id]: !visibleColumns[col.id],
+                          })
+                        }
+                        className="bg-blue-600 text-white p-1 rounded hover:bg-blue-700 transition"
+                        title={
+                          visibleColumns[col.id]
+                            ? "پنهان کردن این ستون"
+                            : "نمایش این ستون"
+                        }>
+                        {visibleColumns[col.id] ? (
+                          <Eye size={14} />
+                        ) : (
+                          <EyeOff size={14} />
+                        )}
+                      </button>
+                    </div>
                     <input
                       type="text"
                       value={col.name}
@@ -682,7 +771,10 @@ export default function PDFTablePage() {
               {rows.map((row) => (
                 <tr
                   key={row.id}
-                  className={row.isHeader ? "" : "hover:bg-gray-50"}>
+                  className={row.isHeader ? "" : "hover:bg-gray-50"}
+                  style={{
+                    opacity: visibleRows[row.id] ? 1 : 0.4,
+                  }}>
                   {columns.map((col) => (
                     <td
                       key={col.id}
@@ -693,7 +785,9 @@ export default function PDFTablePage() {
                               backgroundColor: headerColor,
                               color: "white",
                             }
-                          : {}
+                          : visibleColumns[col.id]
+                          ? {}
+                          : { backgroundColor: "#f3f4f6" }
                       }>
                       <textarea
                         rows={1}
@@ -722,7 +816,26 @@ export default function PDFTablePage() {
                     </td>
                   ))}
                   <td className="border border-gray-300 p-2 text-center bg-white">
-                    <div className="flex gap-2 justify-center">
+                    <div className="flex gap-2 justify-center flex-wrap">
+                      <button
+                        onClick={() =>
+                          setVisibleRows({
+                            ...visibleRows,
+                            [row.id]: !visibleRows[row.id],
+                          })
+                        }
+                        className="bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition"
+                        title={
+                          visibleRows[row.id]
+                            ? "پنهان کردن این ردیف"
+                            : "نمایش این ردیف"
+                        }>
+                        {visibleRows[row.id] ? (
+                          <Eye size={16} />
+                        ) : (
+                          <EyeOff size={16} />
+                        )}
+                      </button>
                       <button
                         onClick={() => insertRowAfter(row.id)}
                         className="bg-green-600 text-white p-2 rounded hover:bg-green-700 transition"
